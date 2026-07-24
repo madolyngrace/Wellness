@@ -1,0 +1,1099 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Sprout — Wellness Tracker</title>
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,400;0,9..144,500;0,9..144,600;1,9..144,500&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --bg: #E8F1E2;
+    --bg-deep: #DCEAD3;
+    --card: #F8FBF4;
+    --sage: #9FBF8E;
+    --sage-dark: #6F9760;
+    --sage-pale: #D3E6C9;
+    --brown-deep: #4A3A28;
+    --brown-soft: #8A6F52;
+    --brown-faint: #B7A188;
+    --gold: #C9A15F;
+    --terracotta: #BE8467;
+    --border: #D7E5CB;
+    --shadow: 0 2px 14px rgba(74,58,40,0.08);
+  }
+  *{box-sizing:border-box;}
+  body{
+    margin:0;
+    font-family:'Inter',sans-serif;
+    background: linear-gradient(180deg, var(--bg) 0%, var(--bg-deep) 100%);
+    color: var(--brown-deep);
+    min-height:100vh;
+    -webkit-font-smoothing:antialiased;
+  }
+  .app{max-width:680px;margin:0 auto;padding:28px 20px 60px;}
+  @media (min-width:700px){
+    .app{max-width:960px;padding:36px 40px 70px;}
+  }
+  header.top{display:flex;align-items:center;justify-content:space-between;margin-bottom:22px;}
+  .brand{display:flex;align-items:center;gap:10px;}
+  .brand svg{width:30px;height:30px;}
+  .brand h1{font-family:'Fraunces',serif;font-weight:600;font-size:1.5rem;margin:0;letter-spacing:0.2px;}
+  .date-pill{font-size:0.8rem;color:var(--brown-soft);background:var(--card);border:1px solid var(--border);padding:6px 12px;border-radius:20px;white-space:nowrap;}
+
+  nav.tabs{display:flex;flex-wrap:nowrap;gap:5px;background:var(--card);border:1px solid var(--border);border-radius:16px;padding:5px;margin-bottom:20px;box-shadow:var(--shadow);overflow-x:auto;}
+  nav.tabs button{flex:1 1 0;min-width:0;border:none;background:transparent;padding:10px 4px;border-radius:12px;font-family:'Inter',sans-serif;font-weight:600;font-size:0.74rem;color:var(--brown-soft);cursor:pointer;transition:all .15s ease;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+  nav.tabs button.active{background:var(--sage);color:#fff;box-shadow:0 2px 8px rgba(111,151,96,0.35);}
+  nav.tabs button:not(.active):hover{background:var(--sage-pale);}
+
+  /* Cards always stack full-width, one per row — no side-by-side grid. */
+  .card-grid{display:block;}
+
+  .card{background:var(--card);border:1px solid var(--border);border-radius:20px;padding:20px;margin-bottom:16px;box-shadow:var(--shadow);}
+  .card h2{font-family:'Fraunces',serif;font-weight:600;font-size:1.05rem;margin:0 0 14px;color:var(--brown-deep);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+  .muted{color:var(--brown-faint);font-size:0.82rem;}
+
+  /* Dashboard ring */
+  .ring-wrap{display:flex;flex-direction:column;align-items:center;justify-content:center;gap:10px;text-align:center;}
+  .ring-wrap svg{flex-shrink:0;}
+  .ring-below{display:flex;flex-direction:column;align-items:center;}
+  .ring-num{font-family:'Fraunces',serif;font-size:1.9rem;font-weight:600;}
+  .ring-label{font-size:0.78rem;color:var(--brown-soft);margin-top:2px;}
+  .stat-row{display:flex;gap:14px;margin-top:14px;flex-wrap:wrap;}
+  .stat-box{flex:1 1 120px;background:var(--sage-pale);border-radius:14px;padding:10px 12px;text-align:center;}
+  .stat-box .n{font-family:'Fraunces',serif;font-size:1.15rem;font-weight:600;color:var(--brown-deep);}
+  .stat-box .l{font-size:0.68rem;color:var(--brown-soft);text-transform:uppercase;letter-spacing:0.4px;}
+
+  /* Leaf streak */
+  .leaf-row{display:flex;gap:8px;margin-top:6px;flex-wrap:wrap;justify-content:space-between;}
+  .leaf{width:26px;height:26px;}
+  .leaf-day-label{font-size:0.62rem;color:var(--brown-faint);text-align:center;width:26px;}
+  .leaf-day-label.today{color:var(--sage-dark);font-weight:700;}
+  .leaf-col{display:flex;flex-direction:column;align-items:center;gap:4px;}
+
+  /* Forms */
+  .row{display:flex;gap:8px;margin-bottom:10px;}
+  input, select{
+    font-family:'Inter',sans-serif;
+    border:1px solid var(--border);
+    background:#fff;
+    border-radius:10px;
+    padding:9px 11px;
+    font-size:0.88rem;
+    color:var(--brown-deep);
+    outline:none;
+  }
+  input:focus, select:focus{border-color:var(--sage-dark);}
+  input[type="text"], input[type="number"]{flex:1;min-width:0;}
+  button.primary, label.primary{
+    background:var(--sage-dark);color:#fff;border:none;border-radius:10px;
+    padding:9px 16px;font-weight:600;font-size:0.85rem;cursor:pointer;
+  }
+  button.primary:hover, label.primary:hover{background:#5f8551;}
+  button.ghost{background:transparent;border:1px solid var(--border);color:var(--brown-soft);border-radius:10px;padding:8px 12px;font-size:0.8rem;cursor:pointer;}
+  button.ghost:hover{background:var(--sage-pale);}
+
+  .entry{display:flex;align-items:center;justify-content:space-between;padding:10px 0;border-bottom:1px dashed var(--border);}
+  .entry:last-child{border-bottom:none;}
+  .entry .meta{display:flex;flex-direction:column;}
+  .entry .meta .name{font-weight:600;font-size:0.9rem;}
+  .entry .meta .tag{font-size:0.7rem;color:var(--brown-soft);text-transform:capitalize;}
+  .entry .cal{font-family:'Fraunces',serif;font-weight:600;color:var(--sage-dark);}
+  .del{background:none;border:none;color:var(--terracotta);font-size:0.75rem;cursor:pointer;margin-left:10px;}
+
+  .workout-item{display:flex;align-items:center;justify-content:space-between;background:var(--sage-pale);border-radius:14px;padding:12px 14px;margin-bottom:10px;}
+  .workout-item .wname{font-weight:600;font-size:0.9rem;}
+  .checkbtn{width:34px;height:34px;border-radius:50%;border:2px solid var(--sage-dark);background:#fff;cursor:pointer;display:flex;align-items:center;justify-content:center;}
+  .checkbtn.done{background:var(--sage-dark);}
+  .checkbtn.done svg{stroke:#fff;}
+  .checkbtn svg{width:16px;height:16px;stroke:var(--sage-dark);stroke-width:3;fill:none;}
+
+  .empty{text-align:center;padding:22px 10px;color:var(--brown-faint);font-size:0.85rem;}
+
+  /* progress chart */
+  svg.chart{width:100%;height:150px;}
+  .weight-entry{display:flex;justify-content:space-between;padding:8px 0;border-bottom:1px dashed var(--border);font-size:0.85rem;}
+  .weight-entry:last-child{border-bottom:none;}
+
+  footer.note{text-align:center;font-size:0.72rem;color:var(--brown-faint);margin-top:10px;line-height:1.5;}
+
+  .celebrate{
+    margin-top:12px;
+    background: linear-gradient(135deg, #F3C9DE, #E7D9A8);
+    color: var(--brown-deep);
+    border-radius:14px;
+    padding:10px 14px;
+    font-size:0.85rem;
+    font-weight:600;
+    text-align:center;
+  }
+
+  .protein-bar-wrap{margin-top:14px;}
+  .protein-bar-label{display:flex;justify-content:space-between;font-size:0.78rem;color:var(--brown-soft);margin-bottom:6px;}
+  .protein-bar-label strong{color:var(--brown-deep);font-family:'Fraunces',serif;font-size:0.9rem;}
+  .protein-bar-track{background:#D7E5CB;border-radius:20px;height:12px;overflow:hidden;}
+  .protein-bar-fill{height:100%;border-radius:20px;background:linear-gradient(90deg, #9FBF8E, #6F9760);transition:width .3s ease;}
+  .protein-bar-fill.over{background:linear-gradient(90deg, #E7D9A8, #C9A15F);}
+
+  .check-row{display:flex;align-items:center;gap:8px;margin-bottom:10px;font-size:0.85rem;color:var(--brown-soft);}
+  .check-row input[type="checkbox"]{width:16px;height:16px;accent-color:var(--sage-dark);}
+
+  .saved-meal-item{display:flex;align-items:center;justify-content:space-between;background:var(--sage-pale);border-radius:14px;padding:10px 14px;margin-bottom:8px;}
+  .saved-meal-item .meta .name{font-weight:600;font-size:0.88rem;}
+  .saved-meal-item .meta .tag{font-size:0.7rem;color:var(--brown-soft);text-transform:capitalize;}
+  .saved-meal-item .actions{display:flex;align-items:center;gap:10px;}
+  .add-btn{background:var(--sage-dark);color:#fff;border:none;border-radius:10px;padding:6px 12px;font-size:0.78rem;font-weight:600;cursor:pointer;}
+  .add-btn:hover{background:#5f8551;}
+
+  .shop-header{display:flex;align-items:center;justify-content:space-between;gap:10px;}
+  .shop-header .list-title-input{
+    font-family:'Fraunces',serif;font-weight:600;font-size:1.05rem;color:var(--brown-deep);
+    border:none;background:transparent;padding:2px 0;flex:1;min-width:0;
+  }
+  .shop-header .list-title-input:focus{border-bottom:1px solid var(--sage-dark);}
+  .shop-count{font-size:0.72rem;color:var(--brown-soft);white-space:nowrap;}
+  .toggle-btn{background:none;border:none;color:var(--sage-dark);font-size:0.9rem;cursor:pointer;padding:4px;}
+  .toggle-btn.open{transform:rotate(180deg);}
+  .shop-body{margin-top:14px;}
+  .shop-item{display:flex;align-items:center;justify-content:space-between;padding:8px 0;border-bottom:1px dashed var(--border);}
+  .shop-item:last-child{border-bottom:none;}
+  .shop-item .txt{font-size:0.88rem;}
+  .shop-item .txt.checked{text-decoration:line-through;color:var(--brown-faint);}
+
+  .plan-week-title{font-family:'Fraunces',serif;font-weight:600;font-size:1.05rem;color:var(--brown-deep);margin-bottom:2px;}
+  .plan-week-total{font-size:0.75rem;color:var(--brown-soft);margin-bottom:12px;}
+  .plan-item{display:flex;align-items:center;justify-content:space-between;padding:9px 0;border-bottom:1px dashed var(--border);}
+  .plan-item:last-child{border-bottom:none;}
+  .plan-item .meta .name{font-weight:600;font-size:0.88rem;}
+  .plan-item .meta .tag{font-size:0.7rem;color:var(--brown-soft);text-transform:capitalize;}
+  .plan-item .right{display:flex;align-items:center;gap:10px;}
+  .plan-item .cal{font-family:'Fraunces',serif;font-weight:600;color:var(--sage-dark);font-size:0.9rem;}
+
+  .ref-details summary{
+    font-family:'Fraunces',serif;font-weight:600;font-size:1.05rem;color:var(--brown-deep);
+    cursor:pointer;list-style:none;display:flex;align-items:center;justify-content:space-between;
+    padding:2px 0;
+  }
+  .ref-details summary::-webkit-details-marker{display:none;}
+  .ref-details summary::after{
+    content:'▾';color:var(--sage-dark);font-size:0.85rem;transition:transform .2s ease;margin-left:10px;
+  }
+  .ref-details[open] summary::after{transform:rotate(180deg);}
+  .ref-details .ref-body{margin-top:14px;}
+</style>
+</head>
+<body>
+<div class="app">
+
+  <header class="top">
+    <div class="brand">
+      <svg viewBox="0 0 32 32" fill="none"><path d="M16 29C16 29 6 24 6 14C6 7 11 3 16 3C21 3 26 7 26 14C26 24 16 29 16 29Z" fill="#9FBF8E" stroke="#6F9760" stroke-width="1.5"/><path d="M16 29V10" stroke="#6F9760" stroke-width="1.5" stroke-linecap="round"/></svg>
+      <h1>Sprout</h1>
+    </div>
+    <div class="date-pill" id="todayPill"></div>
+  </header>
+
+  <nav class="tabs">
+    <button data-tab="dashboard" class="active">Today</button>
+    <button data-tab="meals">Meals</button>
+    <button data-tab="workouts">Workouts</button>
+    <button data-tab="progress">Progress</button>
+    <button data-tab="mealplan">Meal Plan</button>
+  </nav>
+
+  <div id="tab-dashboard"></div>
+  <div id="tab-meals" style="display:none;"></div>
+  <div id="tab-workouts" style="display:none;"></div>
+  <div id="tab-progress" style="display:none;"></div>
+  <div id="tab-mealplan" style="display:none;"></div>
+</div>
+
+<script>
+const LEAF_FILLED = `<svg class="leaf" viewBox="0 0 26 26"><path d="M13 23C13 23 5 19 5 11.5C5 6.5 8.5 3 13 3C17.5 3 21 6.5 21 11.5C21 19 13 23 13 23Z" fill="#6F9760" stroke="#4A3A28" stroke-width="1"/></svg>`;
+const LEAF_EMPTY = `<svg class="leaf" viewBox="0 0 26 26"><path d="M13 23C13 23 5 19 5 11.5C5 6.5 8.5 3 13 3C17.5 3 21 6.5 21 11.5C21 19 13 23 13 23Z" fill="#F8FBF4" stroke="#D7E5CB" stroke-width="1.5"/></svg>`;
+// Same leaf shape, but with a small flower blooming at the tip — shown on days a workout was logged
+const LEAF_FLOWER = `<svg class="leaf" viewBox="0 0 26 26">
+  <path d="M13 23C13 23 5 19 5 11.5C5 6.5 8.5 3 13 3C17.5 3 21 6.5 21 11.5C21 19 13 23 13 23Z" fill="#6F9760" stroke="#4A3A28" stroke-width="1"/>
+  <g transform="translate(13,6)">
+    <circle cx="0" cy="-3.2" r="2.1" fill="#F3C9DE"/>
+    <circle cx="3" cy="-1" r="2.1" fill="#F3C9DE"/>
+    <circle cx="-3" cy="-1" r="2.1" fill="#F3C9DE"/>
+    <circle cx="1.8" cy="1.8" r="2.1" fill="#F3C9DE"/>
+    <circle cx="-1.8" cy="1.8" r="2.1" fill="#F3C9DE"/>
+    <circle cx="0" cy="0" r="1.9" fill="#C9A15F"/>
+  </g>
+</svg>`;
+
+let SETTINGS = null;
+let WEIGHTS = [];
+const todayStr = () => {
+  const d = new Date();
+  return d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0');
+};
+const dateNDaysAgo = (n) => {
+  const d = new Date();
+  d.setDate(d.getDate()-n);
+  return d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0');
+};
+
+// Storage layer: plain browser localStorage, so this works on GitHub Pages,
+// opened as a local file, or anywhere else — no external API needed.
+function lsGet(key){
+  try{
+    const v = localStorage.getItem(key);
+    return v ? v : null;
+  }catch(e){ console.error('Storage read failed', e); return null; }
+}
+function lsSet(key, value){
+  try{ localStorage.setItem(key, value); return true; }
+  catch(e){ console.error('Storage write failed', e); return false; }
+}
+
+async function loadSettings(){
+  const v = lsGet('sprout:settings');
+  return v ? JSON.parse(v) : defaultSettings();
+}
+function defaultSettings(){
+  return {
+    calorieTarget: 1800,
+    proteinTarget: 110,
+    startWeight: 90,
+    goalWeight: 75,
+    workouts: ["Full Body A","Full Body B","Cardio + Core"]
+  };
+}
+async function saveSettings(s){
+  lsSet('sprout:settings', JSON.stringify(s));
+}
+async function loadDay(dateStr){
+  const v = lsGet('sprout:day:'+dateStr);
+  return v ? JSON.parse(v) : {meals:[], workouts:{}, steps:null};
+}
+async function saveDay(dateStr, data){
+  lsSet('sprout:day:'+dateStr, JSON.stringify(data));
+}
+async function loadWeights(){
+  const v = lsGet('sprout:weights');
+  return v ? JSON.parse(v) : [];
+}
+async function saveWeights(arr){
+  lsSet('sprout:weights', JSON.stringify(arr));
+}
+async function loadSavedMeals(){
+  const v = lsGet('sprout:savedMeals');
+  return v ? JSON.parse(v) : [];
+}
+async function saveSavedMeals(arr){
+  lsSet('sprout:savedMeals', JSON.stringify(arr));
+}
+async function loadGroceryChecks(){
+  const v = lsGet('sprout:groceryChecks');
+  return v ? JSON.parse(v) : {};
+}
+async function saveGroceryChecks(obj){
+  lsSet('sprout:groceryChecks', JSON.stringify(obj));
+}
+
+function downloadJSON(obj, filename){
+  const blob = new Blob([JSON.stringify(obj, null, 2)], {type:'application/json'});
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url; a.download = filename;
+  document.body.appendChild(a); a.click(); document.body.removeChild(a);
+  URL.revokeObjectURL(url);
+}
+
+async function exportAllData(){
+  const data = {exportedAt: new Date().toISOString(), days:{}};
+  try{
+    for(let i=0;i<localStorage.length;i++){
+      const k = localStorage.key(i);
+      if(!k.startsWith('sprout:')) continue;
+      const shortKey = k.slice('sprout:'.length);
+      if(shortKey==='settings'){ data.settings = SETTINGS; }
+      else if(shortKey==='weights'){ data.weights = await loadWeights(); }
+      else if(shortKey==='savedMeals'){ data.savedMeals = await loadSavedMeals(); }
+      else if(shortKey==='groceryChecks'){ data.groceryChecks = await loadGroceryChecks(); }
+      else if(shortKey.startsWith('day:')){
+        const dateStr = shortKey.slice(4);
+        data.days[dateStr] = await loadDay(dateStr);
+      }
+    }
+  }catch(e){ console.error('Export failed', e); }
+  downloadJSON(data, 'sprout-backup-'+todayStr()+'.json');
+}
+
+async function importAllData(data){
+  if(data.settings){ SETTINGS = {...SETTINGS, ...data.settings}; await saveSettings(SETTINGS); }
+  if(data.weights){ await saveWeights(data.weights); }
+  if(data.savedMeals){ await saveSavedMeals(data.savedMeals); }
+  if(data.groceryChecks){ await saveGroceryChecks(data.groceryChecks); }
+  if(data.days){
+    for(const [dateStr, dayData] of Object.entries(data.days)){
+      await saveDay(dateStr, dayData);
+    }
+  }
+}
+
+const TYPE_EMOJI = {breakfast:'🌅', lunch:'🥪', dinner:'🍽️', snack:'🍿'};
+function typeLabel(type){
+  return `${TYPE_EMOJI[type]||''} ${type}`.trim();
+}
+
+const DEFAULT_SAVED_MEALS = [
+  {name:'Mediterranean Bowl', cal:615, protein:42, type:'dinner'},
+  {name:'Rotisserie Chicken Caesar Wrap', cal:530, protein:32, type:'dinner'},
+  {name:'Cilantro Lime Burrito Bowl (+ chicken)', cal:750, protein:43, type:'dinner'},
+  {name:'Burger Bowl', cal:445, protein:27, type:'dinner'},
+  {name:'Low-Carb Quesadilla', cal:505, protein:43, type:'dinner'},
+  {name:'Fish & Chips (+ cottage cheese)', cal:495, protein:26, type:'dinner'},
+  {name:'Chocolate Protein Overnight Oats (Fairlife)', cal:390, protein:22, type:'breakfast'},
+  {name:'Chocolate Strawberry Protein Overnight Oats (Fairlife)', cal:415, protein:22, type:'breakfast'},
+  {name:'Biscoff Protein Overnight Oats (Fairlife, plain)', cal:400, protein:22, type:'breakfast'},
+  {name:'Biscoff Protein Overnight Oats (Fairlife, + poached apple)', cal:450, protein:22, type:'breakfast'},
+  {name:'Iced Coffee with Fairlife + Sugar-Free Syrup', cal:70, protein:6, type:'snack'},
+  {name:'Crackers + Snack Cheddar', cal:145, protein:7, type:'snack'},
+  {name:'Popcorners + Hummus', cal:200, protein:4, type:'snack'},
+  {name:'Jello Sugar-Free Dark Chocolate Cup', cal:25, protein:1, type:'snack'},
+  {name:'Snack-Cut Sharp Cheddar', cal:70, protein:5, type:'snack'},
+  {name:'Crackers (serving)', cal:75, protein:2, type:'snack'},
+  {name:'Hummus (2 tbsp)', cal:70, protein:2, type:'snack'},
+  {name:'Popcorners, Sea Salt (individual bag)', cal:130, protein:2, type:'snack'},
+];
+
+async function seedDefaultSavedMeals(){
+  const existing = await loadSavedMeals();
+  let changed = false;
+  for(const def of DEFAULT_SAVED_MEALS){
+    const already = existing.find(m=>m.name.toLowerCase()===def.name.toLowerCase() && m.type===def.type);
+    if(!already){
+      existing.push({id:uid(), name:def.name, cal:def.cal, protein:def.protein, type:def.type});
+      changed = true;
+    }
+  }
+  if(changed) await saveSavedMeals(existing);
+}
+
+function uid(){ return Math.random().toString(36).slice(2,9); }
+
+// ---------- DASHBOARD ----------
+async function renderDashboard(){
+  const el = document.getElementById('tab-dashboard');
+  el.innerHTML = '<div class="empty">Loading…</div>';
+  const day = await loadDay(todayStr());
+  const totalCal = day.meals.reduce((s,m)=>s+Number(m.cal||0),0);
+  const totalProtein = day.meals.reduce((s,m)=>s+Number(m.protein||0),0);
+  const target = SETTINGS.calorieTarget;
+  const pct = Math.min(100, Math.round((totalCal/target)*100));
+  const circumference = 2*Math.PI*54;
+  const dash = circumference*(pct/100);
+  const workoutsDoneCount = Object.values(day.workouts||{}).filter(Boolean).length + ((day.otherWorkout && day.otherWorkout.done) ? 1 : 0);
+  const stepsCelebrate = day.steps!=null && day.steps>=8000;
+
+  // 7 day leaf streak
+  let leafDays = [];
+  for(let i=6;i>=0;i--){
+    const ds = dateNDaysAgo(i);
+    const d = await loadDay(ds);
+    const workoutDone = (d.workouts && Object.values(d.workouts).some(v=>v)) || (d.otherWorkout && d.otherWorkout.done);
+    const mealLogged = d.meals && d.meals.length>0;
+    const logged = mealLogged || workoutDone;
+    const dow = new Date(ds+'T00:00:00').toLocaleDateString('en-US',{weekday:'short'}).slice(0,1);
+    leafDays.push({dow, logged, workoutDone, isToday: ds===todayStr()});
+  }
+
+  el.innerHTML = `
+    <div class="card-grid">
+    <div class="card">
+      <h2>Calories today</h2>
+      <div class="ring-wrap">
+        <svg width="150" height="150" viewBox="0 0 120 120">
+          <circle cx="60" cy="60" r="54" fill="none" stroke="#D7E5CB" stroke-width="10"/>
+          <circle cx="60" cy="60" r="54" fill="none" stroke="${pct>=100?'#BE8467':'#6F9760'}" stroke-width="10"
+            stroke-dasharray="${circumference}" stroke-dashoffset="${circumference-dash}" stroke-linecap="round"
+            transform="rotate(-90 60 60)"/>
+          <text x="60" y="56" text-anchor="middle" font-family="Fraunces, serif" font-size="22" font-weight="600" fill="#4A3A28">${totalCal}</text>
+          <text x="60" y="74" text-anchor="middle" font-family="Inter, sans-serif" font-size="10" fill="#8A6F52">of ${target} kcal</text>
+        </svg>
+        <div class="ring-below">
+          <div class="ring-num">${target-totalCal>=0?target-totalCal:0}</div>
+          <div class="ring-label">kcal remaining today</div>
+        </div>
+      </div>
+      <div class="stat-row">
+        <div class="stat-box"><div class="n">${workoutsDoneCount}</div><div class="l">Workouts</div></div>
+        <div class="stat-box"><div class="n">${day.steps!=null?day.steps.toLocaleString():'—'}</div><div class="l">Steps</div></div>
+      </div>
+      <div class="protein-bar-wrap">
+        <div class="protein-bar-label"><span>Protein</span><strong>${totalProtein}g / ${SETTINGS.proteinTarget}g</strong></div>
+        <div class="protein-bar-track"><div class="protein-bar-fill ${totalProtein>=SETTINGS.proteinTarget?'over':''}" style="width:${Math.min(100, Math.round((totalProtein/SETTINGS.proteinTarget)*100))}%;"></div></div>
+      </div>
+      ${stepsCelebrate ? `<div class="celebrate">🌸 8,000+ steps today — that's a full bloom! Nicely done.</div>` : ''}
+    </div>
+
+    <div class="card">
+      <h2>This week</h2>
+      <div class="leaf-row">
+        ${leafDays.map(l=>`<div class="leaf-col">${l.workoutDone?LEAF_FLOWER:(l.logged?LEAF_FILLED:LEAF_EMPTY)}<div class="leaf-day-label ${l.isToday?'today':''}">${l.dow}</div></div>`).join('')}
+      </div>
+      <div class="muted" style="margin-top:10px;">A leaf fills in on any day you log a meal — it blooms into a flower on days you complete a workout.</div>
+    </div>
+    </div>
+  `;
+}
+
+// ---------- MEALS ----------
+async function renderMeals(){
+  const el = document.getElementById('tab-meals');
+  const day = await loadDay(todayStr());
+  const totalCal = day.meals.reduce((s,m)=>s+Number(m.cal||0),0);
+  const saved = await loadSavedMeals();
+
+  el.innerHTML = `
+    <div class="card-grid">
+    <div class="card">
+      <h2>Log a meal — ${totalCal} kcal so far today</h2>
+      <div class="row">
+        <select id="mealType">
+          <option value="breakfast">🌅 Breakfast</option>
+          <option value="lunch">🥪 Lunch</option>
+          <option value="dinner">🍽️ Dinner</option>
+          <option value="snack">🍿 Snack</option>
+        </select>
+      </div>
+      <div class="row">
+        <input type="text" id="mealName" placeholder="What did you eat?">
+      </div>
+      <div class="row">
+        <input type="number" id="mealCal" placeholder="Calories">
+        <input type="number" id="mealProtein" placeholder="Protein (g, optional)">
+      </div>
+      <div class="check-row">
+        <input type="checkbox" id="saveMealCheck">
+        <label for="saveMealCheck">Save this meal so I can quick-add it again later</label>
+      </div>
+      <button class="primary" id="addMealBtn">Add</button>
+    </div>
+
+    <div class="card">
+      <h2>Today's meals</h2>
+      <div id="mealList">
+        ${day.meals.length===0 ? '<div class="empty">Nothing logged yet — add your first meal above.</div>' :
+          day.meals.map(m=>`
+            <div class="entry">
+              <div class="meta"><div class="name">${escapeHtml(m.name)}</div><div class="tag">${typeLabel(m.type)}${m.protein?` · ${m.protein}g protein`:''}</div></div>
+              <div style="display:flex;align-items:center;">
+                <div class="cal">${m.cal} kcal</div>
+                <button class="del" data-id="${m.id}">remove</button>
+              </div>
+            </div>`).join('')}
+      </div>
+    </div>
+
+    <div class="card">
+      <h2>Saved meals</h2>
+      ${saved.length>0 ? `<div class="row"><input type="text" id="savedMealSearch" placeholder="Search saved meals…"></div>` : ''}
+      <div id="savedMealList">
+        ${saved.length===0 ? '<div class="empty">No saved meals yet — check "save this meal" when logging one to build your list.</div>' :
+          saved.map(m=>`
+            <div class="saved-meal-item" data-searchname="${escapeHtml(m.name.toLowerCase())}">
+              <div class="meta"><div class="name">${escapeHtml(m.name)}</div><div class="tag">${typeLabel(m.type)} · ${m.cal} kcal${m.protein?` · ${m.protein}g protein`:''}</div></div>
+              <div class="actions">
+                <button class="add-btn" data-savedid="${m.id}">+ Add to today</button>
+                <button class="del" data-savedremove="${m.id}">remove</button>
+              </div>
+            </div>
+          `).join('')}
+      </div>
+    </div>
+    </div>
+  `;
+
+  const searchInput = document.getElementById('savedMealSearch');
+  if(searchInput){
+    searchInput.oninput = ()=>{
+      const q = searchInput.value.trim().toLowerCase();
+      document.querySelectorAll('#savedMealList .saved-meal-item').forEach(item=>{
+        item.style.display = item.dataset.searchname.includes(q) ? '' : 'none';
+      });
+    };
+  }
+
+  document.getElementById('addMealBtn').onclick = async ()=>{
+    const name = document.getElementById('mealName').value.trim();
+    const cal = document.getElementById('mealCal').value;
+    const protein = document.getElementById('mealProtein').value;
+    const type = document.getElementById('mealType').value;
+    const shouldSave = document.getElementById('saveMealCheck').checked;
+    if(!name || !cal) return;
+    const d = await loadDay(todayStr());
+    d.meals.push({id:uid(), name, cal:Number(cal), protein:Number(protein||0), type});
+    await saveDay(todayStr(), d);
+
+    if(shouldSave){
+      let savedArr = await loadSavedMeals();
+      // avoid duplicate entries for the same name+type; update it instead
+      const existing = savedArr.find(m=>m.name.toLowerCase()===name.toLowerCase() && m.type===type);
+      if(existing){
+        existing.cal = Number(cal);
+        existing.protein = Number(protein||0);
+      } else {
+        savedArr.push({id:uid(), name, cal:Number(cal), protein:Number(protein||0), type});
+      }
+      await saveSavedMeals(savedArr);
+    }
+
+    renderMeals();
+    renderDashboard();
+  };
+  el.querySelectorAll('.del[data-id]').forEach(btn=>{
+    btn.onclick = async ()=>{
+      const d = await loadDay(todayStr());
+      d.meals = d.meals.filter(m=>m.id!==btn.dataset.id);
+      await saveDay(todayStr(), d);
+      renderMeals();
+      renderDashboard();
+    };
+  });
+  el.querySelectorAll('.add-btn[data-savedid]').forEach(btn=>{
+    btn.onclick = async ()=>{
+      const savedArr = await loadSavedMeals();
+      const m = savedArr.find(x=>x.id===btn.dataset.savedid);
+      if(!m) return;
+      const d = await loadDay(todayStr());
+      d.meals.push({id:uid(), name:m.name, cal:m.cal, protein:m.protein, type:m.type});
+      await saveDay(todayStr(), d);
+      renderMeals();
+      renderDashboard();
+    };
+  });
+  el.querySelectorAll('.del[data-savedremove]').forEach(btn=>{
+    btn.onclick = async ()=>{
+      let savedArr = await loadSavedMeals();
+      savedArr = savedArr.filter(m=>m.id!==btn.dataset.savedremove);
+      await saveSavedMeals(savedArr);
+      renderMeals();
+    };
+  });
+}
+
+// ---------- WORKOUTS ----------
+const WORKOUT_DETAILS = {
+  "Full Body A": {
+    subtitle: "Squats, push-ups, rows, plank",
+    exercises: [
+      "Squats — 3 x 12–15",
+      "Push-ups (knee variation if needed) — 3 x 10–15",
+      "Glute bridges — 3 x 15",
+      "Bent-over rows (dumbbells/band/water bottles) — 3 x 12",
+      "Plank — 3 x 30–45 sec"
+    ]
+  },
+  "Full Body B": {
+    subtitle: "Lunges, chest press, hinges",
+    exercises: [
+      "Lunges — 3 x 12 per leg",
+      "Incline push-ups or dumbbell chest press — 3 x 12",
+      "Romanian deadlifts or hip hinges — 3 x 12",
+      "Standing dumbbell shoulder press — 3 x 12",
+      "Side plank — 2 x 30 sec per side"
+    ]
+  },
+  "Cardio + Core": {
+    subtitle: "Walk/jog/HIIT + core finisher",
+    exercises: [
+      "20–30 min brisk walk, jog, or HIIT (30 sec on / 30 sec off x 8 rounds: jumping jacks, mountain climbers, burpees)",
+      "Bicycle crunches — 3 x 15",
+      "Leg raises — 3 x 15"
+    ]
+  }
+};
+
+async function renderWorkouts(){
+  const el = document.getElementById('tab-workouts');
+  const day = await loadDay(todayStr());
+  const workouts = SETTINGS.workouts;
+  const other = day.otherWorkout || {done:false, desc:''};
+  const stepsCelebrate = day.steps!=null && day.steps>=8000;
+
+  el.innerHTML = `
+    <div class="card-grid">
+    <div class="card">
+      <h2>Today's workouts</h2>
+      ${workouts.map(w=>`
+        <div class="workout-item">
+          <div class="wname">${escapeHtml(w)}</div>
+          <button class="checkbtn ${day.workouts && day.workouts[w] ? 'done':''}" data-w="${escapeHtml(w)}">
+            <svg viewBox="0 0 24 24"><polyline points="4,13 9,18 20,6"/></svg>
+          </button>
+        </div>
+      `).join('')}
+      <div class="workout-item" style="flex-direction:column;align-items:stretch;gap:8px;">
+        <div style="display:flex;align-items:center;justify-content:space-between;">
+          <div class="wname">Other</div>
+          <button class="checkbtn ${other.done ? 'done':''}" id="otherCheckBtn">
+            <svg viewBox="0 0 24 24"><polyline points="4,13 9,18 20,6"/></svg>
+          </button>
+        </div>
+        <input type="text" id="otherDesc" placeholder="What did you do? (e.g. yoga class, swim, hike)" value="${escapeHtml(other.desc||'')}">
+      </div>
+      <div class="muted">Tap the circle to mark a workout complete for today.</div>
+    </div>
+
+    <div class="card">
+      <h2>Steps today</h2>
+      <div class="row">
+        <input type="number" id="stepsInput" placeholder="e.g. 6500" value="${day.steps!=null?day.steps:''}">
+        <button class="primary" id="saveStepsBtn">Save</button>
+      </div>
+      <div class="muted">Aiming for 7,000–8,000 steps/day is a solid, sustainable target alongside your workouts.</div>
+      ${stepsCelebrate ? `<div class="celebrate">🌸 8,000+ steps today — that's a full bloom! Nicely done.</div>` : ''}
+    </div>
+
+    <div class="card">
+      <details class="ref-details">
+        <summary>Reference: your routines</summary>
+        <div class="ref-body">
+          ${workouts.filter(w=>WORKOUT_DETAILS[w]).map(w=>`
+            <div style="margin-bottom:16px;">
+              <div class="wname" style="margin-bottom:2px;">${escapeHtml(w)}</div>
+              <div class="tag" style="margin-bottom:8px;">${WORKOUT_DETAILS[w].subtitle}</div>
+              <ul style="margin:0;padding-left:18px;font-size:0.85rem;line-height:1.7;color:#4A3A28;">
+                ${WORKOUT_DETAILS[w].exercises.map(x=>`<li>${escapeHtml(x)}</li>`).join('')}
+              </ul>
+            </div>
+          `).join('')}
+          <div class="muted">Add reps, slow the tempo, or add resistance every 1–2 weeks once a workout starts feeling easy.</div>
+        </div>
+      </details>
+    </div>
+    </div>
+  `;
+  el.querySelectorAll('.checkbtn[data-w]').forEach(btn=>{
+    btn.onclick = async ()=>{
+      const d = await loadDay(todayStr());
+      d.workouts = d.workouts || {};
+      d.workouts[btn.dataset.w] = !d.workouts[btn.dataset.w];
+      await saveDay(todayStr(), d);
+      renderWorkouts();
+      renderDashboard();
+    };
+  });
+  document.getElementById('otherCheckBtn').onclick = async ()=>{
+    const d = await loadDay(todayStr());
+    d.otherWorkout = d.otherWorkout || {done:false, desc:''};
+    d.otherWorkout.done = !d.otherWorkout.done;
+    d.otherWorkout.desc = document.getElementById('otherDesc').value;
+    await saveDay(todayStr(), d);
+    renderWorkouts();
+    renderDashboard();
+  };
+  document.getElementById('otherDesc').onchange = async ()=>{
+    const d = await loadDay(todayStr());
+    d.otherWorkout = d.otherWorkout || {done:false, desc:''};
+    d.otherWorkout.desc = document.getElementById('otherDesc').value;
+    await saveDay(todayStr(), d);
+  };
+  document.getElementById('saveStepsBtn').onclick = async ()=>{
+    const steps = document.getElementById('stepsInput').value;
+    const d = await loadDay(todayStr());
+    d.steps = steps === '' ? null : Number(steps);
+    await saveDay(todayStr(), d);
+    renderWorkouts();
+    renderDashboard();
+  };
+}
+
+// ---------- PROGRESS ----------
+async function getWeekOverview(){
+  // Walks the last 7 days plus computes a running streak of consecutive logged days
+  let days = [];
+  for(let i=6;i>=0;i--){
+    const ds = dateNDaysAgo(i);
+    const d = await loadDay(ds);
+    const totalCal = (d.meals||[]).reduce((s,m)=>s+Number(m.cal||0),0);
+    const mealLogged = d.meals && d.meals.length>0;
+    const workoutDone = (d.workouts && Object.values(d.workouts).some(v=>v)) || (d.otherWorkout && d.otherWorkout.done);
+    const logged = mealLogged || workoutDone;
+    days.push({date:ds, totalCal, mealLogged, workoutDone, logged, steps:d.steps});
+  }
+  const loggedCalDays = days.filter(d=>d.mealLogged);
+  const avgCal = loggedCalDays.length ? Math.round(loggedCalDays.reduce((s,d)=>s+d.totalCal,0)/loggedCalDays.length) : null;
+
+  const loggedStepDays = days.filter(d=>d.steps!=null);
+  const avgSteps = loggedStepDays.length ? Math.round(loggedStepDays.reduce((s,d)=>s+d.steps,0)/loggedStepDays.length) : null;
+
+  // streak: count backward from today, stop at first day with nothing logged
+  let streak = 0;
+  for(let i=days.length-1;i>=0;i--){
+    if(days[i].logged) streak++;
+    else break;
+  }
+  return {days, avgCal, avgSteps, streak};
+}
+
+async function renderProgress(){
+  const el = document.getElementById('tab-progress');
+  el.innerHTML = '<div class="empty">Loading…</div>';
+  WEIGHTS = await loadWeights();
+  const week = await getWeekOverview();
+  const sorted = [...WEIGHTS].sort((a,b)=>a.date.localeCompare(b.date));
+  const latest = sorted.length ? sorted[sorted.length-1].kg : SETTINGS.startWeight;
+  const totalToLose = SETTINGS.startWeight - SETTINGS.goalWeight;
+  const lostSoFar = SETTINGS.startWeight - latest;
+  const pct = totalToLose>0 ? Math.max(0,Math.min(100, Math.round((lostSoFar/totalToLose)*100))) : 0;
+
+  let chartSvg = '<div class="empty">Log a weight below to start your trend line.</div>';
+  if(sorted.length>=1){
+    const w = 560, h=140, pad=20;
+    const vals = sorted.map(s=>s.kg);
+    const minV = Math.min(...vals, SETTINGS.goalWeight)-1;
+    const maxV = Math.max(...vals, SETTINGS.startWeight)+1;
+    const pts = sorted.map((s,i)=>{
+      const x = sorted.length===1? pad : pad + i*((w-2*pad)/(sorted.length-1));
+      const y = h-pad - ((s.kg-minV)/(maxV-minV))*(h-2*pad);
+      return [x,y];
+    });
+    const path = pts.map((p,i)=> (i===0?'M':'L')+p[0].toFixed(1)+','+p[1].toFixed(1)).join(' ');
+    const goalY = h-pad - ((SETTINGS.goalWeight-minV)/(maxV-minV))*(h-2*pad);
+    chartSvg = `<svg class="chart" viewBox="0 0 ${w} ${h}">
+      <line x1="${pad}" y1="${goalY}" x2="${w-pad}" y2="${goalY}" stroke="#C9A15F" stroke-width="1.5" stroke-dasharray="4,4"/>
+      <text x="${w-pad}" y="${goalY-6}" text-anchor="end" font-size="10" fill="#C9A15F">goal ${SETTINGS.goalWeight}kg</text>
+      <path d="${path}" fill="none" stroke="#6F9760" stroke-width="2.5"/>
+      ${pts.map(p=>`<circle cx="${p[0]}" cy="${p[1]}" r="3.5" fill="#4A3A28"/>`).join('')}
+    </svg>`;
+  }
+
+  el.innerHTML = `
+    <div class="card-grid">
+    <div class="card">
+      <h2>Weight trend</h2>
+      ${chartSvg}
+      <div class="stat-row">
+        <div class="stat-box"><div class="n">${latest}kg</div><div class="l">Current</div></div>
+        <div class="stat-box"><div class="n">${lostSoFar>=0?lostSoFar.toFixed(1):0}kg</div><div class="l">Lost so far</div></div>
+        <div class="stat-box"><div class="n">${pct}%</div><div class="l">To goal</div></div>
+      </div>
+    </div>
+
+    <div class="card">
+      <h2>This week</h2>
+      <div class="stat-row">
+        <div class="stat-box"><div class="n">${week.avgCal!=null?week.avgCal:'—'}</div><div class="l">Avg kcal/day</div></div>
+        <div class="stat-box"><div class="n">${week.avgSteps!=null?week.avgSteps.toLocaleString():'—'}</div><div class="l">Avg steps/day</div></div>
+        <div class="stat-box"><div class="n">${week.streak}</div><div class="l">Day streak</div></div>
+      </div>
+      <div class="leaf-row" style="margin-top:14px;">
+        ${week.days.map(d=>{
+          const dow = new Date(d.date+'T00:00:00').toLocaleDateString('en-US',{weekday:'short'}).slice(0,1);
+          const isToday = d.date===todayStr();
+          const icon = d.workoutDone ? LEAF_FLOWER : (d.logged ? LEAF_FILLED : LEAF_EMPTY);
+          return `<div class="leaf-col">${icon}<div class="leaf-day-label ${isToday?'today':''}">${dow}</div></div>`;
+        }).join('')}
+      </div>
+      <div class="muted" style="margin-top:10px;">${week.avgCal!=null ? `Average is based on the ${week.days.filter(d=>d.mealLogged).length} day(s) you logged meals this week.` : 'Log a meal to start seeing your weekly average.'}</div>
+    </div>
+
+    <div class="card">
+      <h2>Log your weight</h2>
+      <div class="row">
+        <input type="date" id="wDate" value="${todayStr()}">
+        <input type="number" step="0.1" id="wKg" placeholder="kg">
+        <button class="primary" id="addWeightBtn">Save</button>
+      </div>
+      <div id="weightList">
+        ${sorted.length===0?'':sorted.slice().reverse().slice(0,10).map(s=>`
+          <div class="weight-entry"><span>${s.date}</span><span>${s.kg} kg</span></div>
+        `).join('')}
+      </div>
+    </div>
+
+    <div class="card">
+      <h2>Backup</h2>
+      <div class="row">
+        <button class="primary" id="exportBtn">Export data</button>
+        <label class="primary" style="cursor:pointer;display:inline-flex;align-items:center;">
+          Import data
+          <input type="file" id="importFile" accept="application/json" style="display:none;">
+        </label>
+      </div>
+      <div class="muted">Export saves everything — meals, workouts, weights, saved meals, and settings — as a JSON file. Import restores from a file you exported before.</div>
+      <div id="importStatus" class="muted" style="margin-top:6px;"></div>
+    </div>
+    </div>
+  `;
+  document.getElementById('addWeightBtn').onclick = async ()=>{
+    const date = document.getElementById('wDate').value;
+    const kg = document.getElementById('wKg').value;
+    if(!date || !kg) return;
+    let arr = await loadWeights();
+    arr = arr.filter(w=>w.date!==date);
+    arr.push({date, kg:Number(kg)});
+    await saveWeights(arr);
+    renderProgress();
+  };
+  document.getElementById('exportBtn').onclick = exportAllData;
+  document.getElementById('importFile').onchange = async (e)=>{
+    const file = e.target.files[0];
+    if(!file) return;
+    const statusEl = document.getElementById('importStatus');
+    try{
+      const text = await file.text();
+      const data = JSON.parse(text);
+      await importAllData(data);
+      SETTINGS = await loadSettings();
+      statusEl.textContent = 'Import complete.';
+      renderProgress();
+      renderDashboard();
+    }catch(err){
+      statusEl.textContent = "Import failed — that file wasn't valid.";
+      console.error(err);
+    }
+  };
+}
+
+// ---------- MEAL PLAN ----------
+const MEAL_PLAN = [
+  {
+    week: 1,
+    items: [
+      {name:'Chocolate Protein Overnight Oats (Fairlife)', cal:390, protein:22, type:'breakfast'},
+      {name:'Iced Coffee with Fairlife + Sugar-Free Syrup', cal:70, protein:6, type:'snack'},
+      {name:'Mediterranean Bowl', cal:615, protein:42, type:'dinner'},
+      {name:'Crackers + Snack Cheddar', cal:145, protein:7, type:'snack'},
+      {name:'Jello Sugar-Free Dark Chocolate Cup', cal:25, protein:1, type:'snack'},
+    ]
+  },
+  {
+    week: 2,
+    items: [
+      {name:'Biscoff Protein Overnight Oats (Fairlife)', cal:400, protein:22, type:'breakfast'},
+      {name:'Iced Coffee with Fairlife + Sugar-Free Syrup', cal:70, protein:6, type:'snack'},
+      {name:'Rotisserie Chicken Caesar Wrap', cal:530, protein:32, type:'dinner'},
+      {name:'Popcorners + Hummus', cal:200, protein:4, type:'snack'},
+      {name:'Jello Sugar-Free Dark Chocolate Cup', cal:25, protein:1, type:'snack'},
+    ]
+  },
+  {
+    week: 3,
+    items: [
+      {name:'Chocolate Protein Overnight Oats (Fairlife)', cal:390, protein:22, type:'breakfast'},
+      {name:'Iced Coffee with Fairlife + Sugar-Free Syrup', cal:70, protein:6, type:'snack'},
+      {name:'Cilantro Lime Burrito Bowl (+ chicken)', cal:750, protein:43, type:'dinner'},
+      {name:'Crackers + Snack Cheddar', cal:145, protein:7, type:'snack'},
+      {name:'Jello Sugar-Free Dark Chocolate Cup', cal:25, protein:1, type:'snack'},
+    ]
+  },
+  {
+    week: 4,
+    items: [
+      {name:'Biscoff Protein Overnight Oats (Fairlife)', cal:400, protein:22, type:'breakfast'},
+      {name:'Iced Coffee with Fairlife + Sugar-Free Syrup', cal:70, protein:6, type:'snack'},
+      {name:'Burger Bowl', cal:445, protein:27, type:'dinner'},
+      {name:'Popcorners + Hummus', cal:200, protein:4, type:'snack'},
+      {name:'Jello Sugar-Free Dark Chocolate Cup', cal:25, protein:1, type:'snack'},
+    ]
+  },
+  {
+    week: 5,
+    items: [
+      {name:'Chocolate Protein Overnight Oats (Fairlife)', cal:390, protein:22, type:'breakfast'},
+      {name:'Iced Coffee with Fairlife + Sugar-Free Syrup', cal:70, protein:6, type:'snack'},
+      {name:'Low-Carb Quesadilla', cal:505, protein:43, type:'dinner'},
+      {name:'Crackers + Snack Cheddar', cal:145, protein:7, type:'snack'},
+      {name:'Jello Sugar-Free Dark Chocolate Cup', cal:25, protein:1, type:'snack'},
+    ]
+  },
+  {
+    week: 6,
+    items: [
+      {name:'Biscoff Protein Overnight Oats (Fairlife)', cal:400, protein:22, type:'breakfast'},
+      {name:'Iced Coffee with Fairlife + Sugar-Free Syrup', cal:70, protein:6, type:'snack'},
+      {name:'Fish & Chips (+ cottage cheese)', cal:495, protein:26, type:'dinner'},
+      {name:'Popcorners + Hummus', cal:200, protein:4, type:'snack'},
+      {name:'Jello Sugar-Free Dark Chocolate Cup', cal:25, protein:1, type:'snack'},
+    ]
+  },
+];
+
+const WEEK_GROCERY = {
+  1: [
+    'Brown rice pouches (6)','Frozen diced chicken (1.5lb)','Light feta (6oz)','Chickpeas (2 cans)',
+    'Cucumber (2)','Tomato (2-3)','Red onion (1)','Tzatziki (1 tub)',
+    'Rolled oats (2 cups)','Milk (2 cups)','Greek yogurt (1 cup)','Chia seeds (4 tbsp)',
+    'Cocoa powder (4 tbsp)','Maple syrup (4 tsp)','Vanilla extract (1 tsp)','Mini chocolate chips (4 tbsp)',
+    'Coffee grounds, light roast','Fairlife protein milk','Sugar-free syrup',
+    'Jello sugar-free dark chocolate cups','Coke Zero','Snack-cut sharp cheddar','Crackers'
+  ],
+  2: [
+    'Caesar salad kit (1-2 bags)','Rotisserie or preshredded chicken','Low carb wraps (6)','Frozen fries (1 bag)',
+    'Rolled oats (2 cups)','Milk (2 cups)','Greek yogurt (1 cup)','Chia seeds (4 tbsp)',
+    'Biscoff cookie butter (4 tbsp)','Cinnamon (1 tsp)','Vanilla extract (1 tsp)',
+    'Fairlife protein milk','Sugar-free syrup','Jello sugar-free dark chocolate cups',
+    'Coke Zero','Popcorners, sea salt (individual bags)','Hummus'
+  ],
+  3: [
+    'Cilantro lime rice pouches (6)','Black beans pouches (2)','Frozen corn (1 bag)','Shredded cheese (8oz)',
+    'Salsa (1 jar)','Light sour cream (1 tub)','Avocado (3-4)','Frozen diced chicken (~1lb)',
+    'Rolled oats (2 cups)','Milk (2 cups)','Greek yogurt (1 cup)','Chia seeds (4 tbsp)',
+    'Cocoa powder (4 tbsp)','Maple syrup (4 tsp)','Vanilla extract (1 tsp)','Mini chocolate chips (4 tbsp)',
+    'Coffee grounds, light roast','Fairlife protein milk','Sugar-free syrup',
+    'Jello sugar-free dark chocolate cups','Coke Zero','Snack-cut sharp cheddar','Crackers'
+  ],
+  4: [
+    'Frozen fries (1 bag)','Lean beef (2lb)','Onion (1)','Lettuce (1 bag/head)',
+    'American cheese (1 pack)','Pickles (1 jar)',
+    'Rolled oats (2 cups)','Milk (2 cups)','Greek yogurt (1 cup)','Chia seeds (4 tbsp)',
+    'Biscoff cookie butter (4 tbsp)','Cinnamon (1 tsp)','Vanilla extract (1 tsp)',
+    'Fairlife protein milk','Sugar-free syrup','Jello sugar-free dark chocolate cups',
+    'Coke Zero','Popcorners, sea salt (individual bags)','Hummus'
+  ],
+  5: [
+    'Low carb tortillas (1-2 packs)','Cheese (8oz)','Black beans (1-2 pouches)','Frozen diced chicken (1.5lb)',
+    'Salad mix (1-2 bags)','Salsa (1 jar)','Light sour cream (1 tub)',
+    'Rolled oats (2 cups)','Milk (2 cups)','Greek yogurt (1 cup)','Chia seeds (4 tbsp)',
+    'Cocoa powder (4 tbsp)','Maple syrup (4 tsp)','Vanilla extract (1 tsp)','Mini chocolate chips (4 tbsp)',
+    'Coffee grounds, light roast','Fairlife protein milk','Sugar-free syrup',
+    'Jello sugar-free dark chocolate cups','Coke Zero','Snack-cut sharp cheddar','Crackers'
+  ],
+  6: [
+    'Light battered fish fillets (6)','Frozen fries (1 large bag)','Salad mix (1-2 bags)','Cottage cheese (1 small tub)',
+    'Rolled oats (2 cups)','Milk (2 cups)','Greek yogurt (1 cup)','Chia seeds (4 tbsp)',
+    'Biscoff cookie butter (4 tbsp)','Cinnamon (1 tsp)','Vanilla extract (1 tsp)',
+    'Fairlife protein milk','Sugar-free syrup','Jello sugar-free dark chocolate cups',
+    'Coke Zero','Popcorners, sea salt (individual bags)','Hummus'
+  ],
+};
+
+const groceryListOpenState = {}; // in-memory: which weeks' grocery lists are expanded
+
+async function renderMealPlan(){
+  const el = document.getElementById('tab-mealplan');
+  const checks = await loadGroceryChecks();
+
+  el.innerHTML = `
+    <div class="card-grid">
+    ${MEAL_PLAN.map(week=>{
+      const totalCal = week.items.reduce((s,i)=>s+i.cal,0);
+      const totalProtein = week.items.reduce((s,i)=>s+i.protein,0);
+      const groceryItems = WEEK_GROCERY[week.week] || [];
+      const weekChecks = checks[week.week] || [];
+      const checkedCount = weekChecks.filter(Boolean).length;
+      const isOpen = !!groceryListOpenState[week.week];
+      return `
+      <div class="card">
+        <div class="plan-week-title">Week ${week.week}</div>
+        <div class="plan-week-total">${totalCal} kcal · ${totalProtein}g protein/day</div>
+        ${week.items.map((item,idx)=>`
+          <div class="plan-item">
+            <div class="meta"><div class="name">${escapeHtml(item.name)}</div><div class="tag">${typeLabel(item.type)}</div></div>
+            <div class="right">
+              <div class="cal">${item.cal} kcal</div>
+              <button class="add-btn" data-week="${week.week}" data-idx="${idx}">+ Add to today</button>
+            </div>
+          </div>
+        `).join('')}
+        <div class="row" style="margin-top:14px;">
+          <button class="ghost" data-groceryweek="${week.week}">${isOpen?'Hide':'See'} grocery list (${checkedCount}/${groceryItems.length})</button>
+        </div>
+        ${isOpen ? `
+          <div class="shop-body" style="display:block;">
+            ${groceryItems.map((gItem,gIdx)=>`
+              <div class="shop-item">
+                <div style="display:flex;align-items:center;gap:10px;">
+                  <button class="checkbtn ${weekChecks[gIdx]?'done':''}" style="width:24px;height:24px;" data-cweek="${week.week}" data-cidx="${gIdx}">
+                    <svg viewBox="0 0 24 24"><polyline points="4,13 9,18 20,6"/></svg>
+                  </button>
+                  <span class="txt ${weekChecks[gIdx]?'checked':''}">${escapeHtml(gItem)}</span>
+                </div>
+              </div>
+            `).join('')}
+            <div class="row" style="margin-top:10px;">
+              <button class="ghost" data-clearweek="${week.week}">clear all checks</button>
+            </div>
+          </div>
+        ` : ''}
+      </div>`;
+    }).join('')}
+    </div>
+  `;
+
+  el.querySelectorAll('.add-btn[data-week]').forEach(btn=>{
+    btn.onclick = async ()=>{
+      const week = MEAL_PLAN.find(w=>w.week===Number(btn.dataset.week));
+      const item = week.items[Number(btn.dataset.idx)];
+      const d = await loadDay(todayStr());
+      d.meals.push({id:uid(), name:item.name, cal:item.cal, protein:item.protein, type:item.type});
+      await saveDay(todayStr(), d);
+      btn.textContent = 'Added ✓';
+      setTimeout(()=>{ btn.textContent = '+ Add to today'; }, 1200);
+      renderDashboard();
+    };
+  });
+
+  el.querySelectorAll('[data-groceryweek]').forEach(btn=>{
+    btn.onclick = ()=>{
+      const w = btn.dataset.groceryweek;
+      groceryListOpenState[w] = !groceryListOpenState[w];
+      renderMealPlan();
+    };
+  });
+
+  el.querySelectorAll('.checkbtn[data-cweek]').forEach(btn=>{
+    btn.onclick = async ()=>{
+      const checks = await loadGroceryChecks();
+      const w = btn.dataset.cweek;
+      const idx = Number(btn.dataset.cidx);
+      checks[w] = checks[w] || [];
+      checks[w][idx] = !checks[w][idx];
+      await saveGroceryChecks(checks);
+      groceryListOpenState[w] = true;
+      renderMealPlan();
+    };
+  });
+
+  el.querySelectorAll('[data-clearweek]').forEach(btn=>{
+    btn.onclick = async ()=>{
+      const checks = await loadGroceryChecks();
+      const w = btn.dataset.clearweek;
+      checks[w] = [];
+      await saveGroceryChecks(checks);
+      groceryListOpenState[w] = true;
+      renderMealPlan();
+    };
+  });
+}
+
+function escapeHtml(s){
+  return String(s).replace(/[&<>"']/g, c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+}
+
+function setupTabs(){
+  const buttons = document.querySelectorAll('nav.tabs button');
+  buttons.forEach(btn=>{
+    btn.onclick = ()=>{
+      buttons.forEach(b=>b.classList.remove('active'));
+      btn.classList.add('active');
+      document.querySelectorAll('[id^="tab-"]').forEach(t=>t.style.display='none');
+      document.getElementById('tab-'+btn.dataset.tab).style.display='block';
+      if(btn.dataset.tab==='dashboard') renderDashboard();
+      if(btn.dataset.tab==='meals') renderMeals();
+      if(btn.dataset.tab==='workouts') renderWorkouts();
+      if(btn.dataset.tab==='progress') renderProgress();
+      if(btn.dataset.tab==='mealplan') renderMealPlan();
+    };
+  });
+}
+
+async function init(){
+  document.getElementById('todayPill').textContent = new Date().toLocaleDateString('en-US',{weekday:'long', month:'short', day:'numeric'});
+  SETTINGS = await loadSettings();
+  await saveSettings(SETTINGS);
+  await seedDefaultSavedMeals();
+  setupTabs();
+  renderDashboard();
+}
+init();
+</script>
+</body>
+</html>
